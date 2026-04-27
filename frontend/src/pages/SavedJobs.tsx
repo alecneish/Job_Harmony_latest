@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Job, JobsApiResponse } from '../types';
 import JobCard from '../components/JobCard';
-import { apiClient } from '../lib/apiClient';
 import { useAuth } from '../context/AuthContext';
+import { fetchJobsWithFit, hasSavedQuizResults } from '../lib/jobsService';
 
 const STORAGE_KEY = 'jh-saved-jobs';
 
@@ -43,9 +43,9 @@ export default function SavedJobs() {
 
     (async () => {
       try {
-        const r = await apiClient('/api/quiz/last');
+        const hasResults = await hasSavedQuizResults(user.id);
         if (cancelled) return;
-        setHasQuizResults(r.ok);
+        setHasQuizResults(hasResults);
       } catch {
         if (!cancelled) setHasQuizResults(false);
       } finally {
@@ -63,11 +63,7 @@ export default function SavedJobs() {
     (async () => {
       try {
         setError(null);
-        const r = await apiClient('/api/jobs');
-        if (!r.ok) {
-          throw new Error(`Failed to load jobs (${r.status})`);
-        }
-        const d = (await r.json()) as Partial<JobsApiResponse>;
+        const d = (await fetchJobsWithFit(user?.id)) as Partial<JobsApiResponse>;
         if (!cancelled) setAllJobs(d.jobs ?? []);
       } catch (e) {
         if (!cancelled) {
@@ -79,7 +75,7 @@ export default function SavedJobs() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user?.id]);
 
   const handleSaveToggle = useCallback(() => {
     setSavedIds(getSavedIds());

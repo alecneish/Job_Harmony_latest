@@ -11,6 +11,18 @@ export interface QuizQuestion {
   tier: string;
 }
 
+export interface QuizResponse {
+  questionId: number;
+  answerValue: number;
+}
+
+export interface DimensionScore {
+  dimension: string;
+  subdimension: string;
+  rawScore: number;
+  normalizedScore: number;
+}
+
 export interface Job {
   id: number;
   title: string;
@@ -24,6 +36,25 @@ export interface Job {
   fitReason: string;
   tags: string[];
   postedDaysAgo: number;
+  targetOpenness?: number;
+  targetConscientiousness?: number;
+  targetExtraversion?: number;
+  targetAgreeableness?: number;
+  targetEmotionalStability?: number;
+  targetRealistic?: number;
+  targetInvestigative?: number;
+  targetArtistic?: number;
+  targetSocial?: number;
+  targetEnterprising?: number;
+  targetConventional?: number;
+  targetAutonomy?: number;
+  targetSecurity?: number;
+  targetChallenge?: number;
+  targetService?: number;
+  targetWorkLifeBalance?: number;
+  targetPace?: number;
+  targetCollaboration?: number;
+  targetStructure?: number;
 }
 
 export interface Applicant {
@@ -67,6 +98,31 @@ export interface CareerMatch {
   title: string;
   matchScore: number;
   rank: number;
+}
+
+export interface CareerProfile {
+  id: number;
+  title: string;
+  description: string;
+  openness: number;
+  conscientiousness: number;
+  extraversion: number;
+  agreeableness: number;
+  emotionalStability: number;
+  realistic: number;
+  investigative: number;
+  artistic: number;
+  social: number;
+  enterprising: number;
+  conventional: number;
+  autonomy: number;
+  security: number;
+  challenge: number;
+  service: number;
+  workLifeBalance: number;
+  pace: number;
+  collaboration: number;
+  structure: number;
 }
 
 export interface QuizResults {

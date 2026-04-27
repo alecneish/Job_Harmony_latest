@@ -1,9 +1,9 @@
 ﻿import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { apiClient } from '../lib/apiClient';
 import type { CareerMatch } from '../types';
 import { persistQuizResultsLocal } from '../lib/quizLocalStorage';
+import { fetchLastQuizResults } from '../lib/quizService';
 
 interface DimensionScore {
   dimension: string;
@@ -58,14 +58,9 @@ export default function QuizResults() {
 
     (async () => {
       try {
-        const res = await apiClient('/api/quiz/last');
+        const data = await fetchLastQuizResults(user.id);
         if (cancelled) return;
-        if (res.ok) {
-          const data = (await res.json()) as {
-            sessionId: string | null;
-            dimensionScores: DimensionScore[];
-            careerMatches: CareerMatch[];
-          };
+        if (data) {
           persistQuizResultsLocal(
             data.sessionId ?? null,
             data.dimensionScores ?? [],

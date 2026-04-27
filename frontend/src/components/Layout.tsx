@@ -1,8 +1,8 @@
 ﻿import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { apiClient } from '../lib/apiClient';
 import Snackbar from './Snackbar';
+import { hasSavedQuizResults } from '../lib/jobsService';
 
 export default function Layout() {
   const { user, userProfile, signOut, loading } = useAuth();
@@ -24,9 +24,9 @@ export default function Layout() {
     setServerHasQuizResults(null);
     (async () => {
       try {
-        const r = await apiClient('/api/quiz/last');
+        const hasResults = await hasSavedQuizResults(user.id);
         if (cancelled) return;
-        setServerHasQuizResults(r.ok);
+        setServerHasQuizResults(hasResults);
       } catch {
         if (!cancelled) setServerHasQuizResults(false);
       }

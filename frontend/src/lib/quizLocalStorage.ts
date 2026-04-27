@@ -50,7 +50,7 @@ function buildOceanScores(dimensionScores: QuizDimensionScore[]): Record<string,
   return result;
 }
 
-/** Writes `jh-quiz-results` and `jh-quiz-raw` — same shape as after POST /api/quiz/submit. */
+/** Writes `jh-quiz-results` and `jh-quiz-raw` — same shape as Supabase-backed quiz submit. */
 export function persistQuizResultsLocal(
   sessionId: string | null,
   dimensionScores: QuizDimensionScore[],

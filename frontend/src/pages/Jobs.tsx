@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { Job, JobsApiResponse } from '../types';
 import JobCard from '../components/JobCard';
 import FilterPanel from '../components/FilterPanel';
-import { apiClient } from '../lib/apiClient';
 import { useAuth } from '../context/AuthContext';
+import { fetchJobsWithFit, hasSavedQuizResults } from '../lib/jobsService';
 
 const STORAGE_KEY = 'jh-saved-jobs';
 
@@ -51,9 +51,9 @@ export default function Jobs() {
 
     (async () => {
       try {
-        const r = await apiClient('/api/quiz/last');
+        const hasResults = await hasSavedQuizResults(user.id);
         if (cancelled) return;
-        setHasQuizResults(r.ok);
+        setHasQuizResults(hasResults);
       } catch {
         if (!cancelled) setHasQuizResults(false);
       } finally {
@@ -71,11 +71,7 @@ export default function Jobs() {
     (async () => {
       try {
         setError(null);
-        const r = await apiClient('/api/jobs');
-        if (!r.ok) {
-          throw new Error(`Failed to load jobs (${r.status})`);
-        }
-        const d = (await r.json()) as JobsApiResponse;
+        const d = (await fetchJobsWithFit(user?.id)) as JobsApiResponse;
         if (!cancelled) setData(d);
       } catch (e) {
         if (!cancelled) {
@@ -87,7 +83,7 @@ export default function Jobs() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user?.id]);
 
   // Re-render job cards when save state changes
   const handleSaveToggle = useCallback(() => {

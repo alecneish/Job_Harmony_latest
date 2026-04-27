@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { QuizQuestion, CareerMatch } from '../types';
+import { QuizQuestion } from '../types';
 import { showSnackbar } from '../components/Snackbar';
-import { apiClient } from '../lib/apiClient';
 import { useAuth } from '../context/AuthContext';
 import { persistQuizResultsLocal, type QuizDimensionScore } from '../lib/quizLocalStorage';
+import { fetchLastQuizResults, fetchQuizQuestions, submitQuizResponses, type QuizTier } from '../lib/quizService';
 
 const QUESTIONS_PER_PAGE = 10;
-
-type QuizTier = 'short' | 'medium' | 'full';
 
 const TIER_CONFIG: Record<QuizTier, { name: string; questions: number; minutes: number; description: string }> = {
   short: {
@@ -62,8 +60,7 @@ export default function Quiz() {
   useEffect(() => {
     if (!tier) return;
     setLoading(true);
-    fetch(`/api/quiz/questions?tier=${tier}`)
-      .then((r) => r.json())
+    fetchQuizQuestions(tier)
       .then((data: QuizQuestion[]) => {
         setQuestions(Array.isArray(data) ? data : []);
         setLoading(false);
@@ -84,9 +81,9 @@ export default function Quiz() {
     async function detectLastResults() {
       if (user && session?.access_token) {
         try {
-          const r = await apiClient('/api/quiz/last');
+          const r = await fetchLastQuizResults(user.id);
           if (cancelled) return;
-          setHasLastResults(r.ok);
+          setHasLastResults(Boolean(r));
           return;
         } catch {
           // Fall through to local check
@@ -149,32 +146,18 @@ export default function Quiz() {
       answerValue: answers[question.id] ?? 3,
     }));
 
-    // Full quiz persists many rows (responses, scores, career matches); allow enough time.
-    const timeoutMs = 120000;
-    const timeoutPromise = new Promise<Response>((_, reject) => {
-      setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
-    });
-
     try {
-      const response = await Promise.race([
-        apiClient('/api/quiz/submit', {
-          method: 'POST',
-          body: JSON.stringify({ responses }),
-        }),
-        timeoutPromise,
-      ]);
-
-      if (!response.ok) {
-        throw new Error(`Quiz submit failed (${response.status})`);
-      }
-
-      const data = (await response.json()) as {
+      const data = (await submitQuizResponses(
+        responses,
+        questions,
+        user?.id,
+      )) as {
         success: boolean;
         persisted?: boolean;
         message?: string;
         sessionId?: string | null;
         dimensionScores: QuizDimensionScore[];
-        careerMatches: CareerMatch[];
+        careerMatches: { careerProfileId: number; title: string; matchScore: number; rank: number }[];
       };
 
       persistQuizResultsLocal(
@@ -198,7 +181,7 @@ export default function Quiz() {
         setShowSavePrompt(true);
       }
     } catch {
-      showSnackbar('Submitting results took too long. Please try again.');
+      showSnackbar('Could not submit quiz right now. Please try again.');
     } finally {
       setSubmitting(false);
     }
