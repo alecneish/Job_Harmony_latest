@@ -122,11 +122,6 @@ export default function QuizResults() {
     <div className="jh-results-container jh-results-container--wide">
       <div className="jh-section-header jh-section-header--spacious">
         <h2>Your Results</h2>
-        {results.sessionId && (
-          <p className="jh-session-id">
-            Session: {results.sessionId}
-          </p>
-        )}
       </div>
 
       <div className="jh-results-layout">
@@ -135,9 +130,8 @@ export default function QuizResults() {
         <div className="jh-traits-card jh-results-card--stretch">
           <h3>Top Career Matches</h3>
 
-          {/* Top 3 podium */}
           <div className="jh-career-podium">
-            {topCareers.slice(0, 3).map((m) => (
+            {topCareers.map((m) => (
               <div key={m.rank} className="jh-career-podium-row">
                 <div className="jh-career-podium-header">
                   <span className="jh-career-rank-badge">{m.rank}</span>
@@ -145,30 +139,6 @@ export default function QuizResults() {
                   <span className="jh-trait-value">{m.matchScore.toFixed(1)}%</span>
                 </div>
                 <div className="jh-trait-bar">
-                  <div
-                    className="jh-trait-fill"
-                    style={{ width: animated ? `${m.matchScore}%` : '0%' }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Divider */}
-          <div className="jh-career-divider" />
-
-          {/* Ranks 4–10 */}
-          <div className="jh-career-rest">
-            {topCareers.slice(3).map((m) => (
-              <div key={m.rank} className="jh-trait-row jh-trait-row--compact">
-                <div className="jh-trait-label">
-                  <span className="jh-career-rest-label">
-                    <span className="jh-career-rest-rank">{m.rank}</span>
-                    {m.title}
-                  </span>
-                  <span className="jh-trait-value">{m.matchScore.toFixed(1)}%</span>
-                </div>
-                <div className="jh-trait-bar jh-trait-bar--slim">
                   <div
                     className="jh-trait-fill"
                     style={{ width: animated ? `${m.matchScore}%` : '0%' }}

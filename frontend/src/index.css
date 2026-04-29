@@ -858,11 +858,6 @@ a:hover {
   flex-direction: column;
 }
 
-.jh-results-card--stretch .jh-career-rest {
-  flex: 1;
-  justify-content: space-between;
-}
-
 /* Makes right-column cards grow to share available height equally */
 .jh-results-card--flex {
   flex: 1;
@@ -877,8 +872,8 @@ a:hover {
 .jh-career-podium {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
-  margin-bottom: 0.5rem;
+  gap: 0.85rem;
+  margin-bottom: 0;
 }
 
 .jh-career-podium-row {
@@ -914,47 +909,6 @@ a:hover {
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--jh-gray-900);
-}
-
-/* --- Career rest (ranks 4–10) --- */
-.jh-career-divider {
-  border: none;
-  border-top: 1px solid var(--jh-gray-200);
-  margin: 0.75rem 0 1rem;
-}
-
-.jh-career-rest {
-  display: flex;
-  flex-direction: column;
-}
-
-.jh-trait-row--compact {
-  margin-bottom: 0.85rem;
-}
-
-.jh-career-rest-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.88rem;
-}
-
-.jh-career-rest-rank {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.3rem;
-  height: 1.3rem;
-  background: var(--jh-gray-200);
-  color: var(--jh-gray-600);
-  border-radius: 50%;
-  font-size: 0.7rem;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.jh-trait-bar--slim {
-  height: 6px;
 }
 
 .jh-motivation-card {
@@ -3139,12 +3093,6 @@ h3 {
   display: flex;
   justify-content: flex-end;
   margin-bottom: var(--jh-space-4);
-}
-
-.jh-session-id {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 0.78rem;
-  color: var(--jh-gray-400);
 }
 
 .jh-modal-backdrop {

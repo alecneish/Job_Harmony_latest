@@ -64,7 +64,7 @@ export async function submitQuizResponses(
   }
 
   const dimensionScores = computeScores(responses, questions);
-  const careers = await fetchCareerProfilesFromJobs();
+  const careers = await fetchCareerProfilesFromJobs().catch(() => []);
   const careerMatches = computeMatches(dimensionScores, careers);
 
   try {
@@ -102,14 +102,16 @@ export async function submitQuizResponses(
           normalized_score: score.normalizedScore,
         })),
       ),
-      supabase.from('career_matches').insert(
-        careerMatches.map((match) => ({
-          session_id: sessionId,
-          career_profile_id: match.careerProfileId,
-          match_score: match.matchScore,
-          rank: match.rank,
-        })),
-      ),
+      careerMatches.length > 0
+        ? supabase.from('career_matches').insert(
+            careerMatches.map((match) => ({
+              session_id: sessionId,
+              career_profile_id: match.careerProfileId,
+              match_score: match.matchScore,
+              rank: match.rank,
+            })),
+          )
+        : Promise.resolve({ error: null }),
     ]);
 
     if (responsesInsert.error) throw responsesInsert.error;
@@ -166,7 +168,7 @@ export async function fetchLastQuizResults(userId?: string): Promise<{
     normalizedScore: Number(row.normalized_score),
   }));
 
-  const careers = await fetchCareerProfilesFromJobs();
+  const careers = await fetchCareerProfilesFromJobs().catch(() => []);
   const careerMatches = computeMatches(dimensionScores, careers);
 
   return {
