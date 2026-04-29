@@ -137,6 +137,13 @@ export async function submitQuizResponses(
   }
 }
 
+export async function buildCareerMatchesFromScores(
+  dimensionScores: DimensionScore[],
+): Promise<CareerMatch[]> {
+  const careers = await fetchCareerProfilesFromJobs();
+  return computeMatches(dimensionScores, careers);
+}
+
 export async function fetchLastQuizResults(userId?: string): Promise<{
   sessionId: string | null;
   dimensionScores: DimensionScore[];

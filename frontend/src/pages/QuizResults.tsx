@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { CareerMatch } from '../types';
 import { persistQuizResultsLocal } from '../lib/quizLocalStorage';
-import { fetchLastQuizResults } from '../lib/quizService';
+import { buildCareerMatchesFromScores, fetchLastQuizResults } from '../lib/quizService';
 
 interface DimensionScore {
   dimension: string;
@@ -22,6 +22,7 @@ export default function QuizResults() {
   const { user } = useAuth();
   const [results, setResults] = useState<RawResults | null>(null);
   const [loading, setLoading] = useState(false);
+  const [repairingMatches, setRepairingMatches] = useState(false);
   const [animated, setAnimated] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
@@ -84,6 +85,41 @@ export default function QuizResults() {
     };
   }, [user?.id]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function repairEmptyCareerMatches() {
+      if (!results || results.careerMatches.length > 0 || results.dimensionScores.length === 0) {
+        return;
+      }
+
+      setRepairingMatches(true);
+      try {
+        const careerMatches = await buildCareerMatchesFromScores(results.dimensionScores);
+        if (cancelled || careerMatches.length === 0) return;
+
+        const repairedResults = {
+          ...results,
+          careerMatches,
+        };
+        setResults(repairedResults);
+        persistQuizResultsLocal(
+          repairedResults.sessionId ?? null,
+          repairedResults.dimensionScores,
+          repairedResults.careerMatches,
+        );
+        scheduleAnimate();
+      } finally {
+        if (!cancelled) setRepairingMatches(false);
+      }
+    }
+
+    repairEmptyCareerMatches();
+    return () => {
+      cancelled = true;
+    };
+  }, [results]);
+
   function handleRetake() {
     localStorage.removeItem('jh-quiz-results');
     localStorage.removeItem('jh-quiz-raw');
@@ -130,23 +166,35 @@ export default function QuizResults() {
         <div className="jh-traits-card jh-results-card--stretch">
           <h3>Top Career Matches</h3>
 
-          <div className="jh-career-podium">
-            {topCareers.map((m) => (
-              <div key={m.rank} className="jh-career-podium-row">
-                <div className="jh-career-podium-header">
-                  <span className="jh-career-rank-badge">{m.rank}</span>
-                  <span className="jh-career-podium-title">{m.title}</span>
-                  <span className="jh-trait-value">{m.matchScore.toFixed(1)}%</span>
+          {repairingMatches && topCareers.length === 0 ? (
+            <p className="jh-muted-copy">Loading your career matches...</p>
+          ) : topCareers.length > 0 ? (
+            <div className="jh-career-podium">
+              {topCareers.map((m) => (
+                <div key={m.rank} className="jh-career-podium-row">
+                  <div className="jh-career-podium-header">
+                    <span className="jh-career-rank-badge">{m.rank}</span>
+                    <span className="jh-career-podium-title">{m.title}</span>
+                    <span className="jh-trait-value">{m.matchScore.toFixed(1)}%</span>
+                  </div>
+                  <div className="jh-trait-bar">
+                    <div
+                      className="jh-trait-fill"
+                      style={{ width: animated ? `${m.matchScore}%` : '0%' }}
+                    />
+                  </div>
                 </div>
-                <div className="jh-trait-bar">
-                  <div
-                    className="jh-trait-fill"
-                    style={{ width: animated ? `${m.matchScore}%` : '0%' }}
-                  />
-                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="jh-empty-state jh-empty-state--compact">
+              <h3>Career matches are loading</h3>
+              <p>Refresh this page in a moment if your matches do not appear.</p>
+              <button className="jh-btn-primary" onClick={() => window.location.reload()}>
+                Refresh Results
+              </button>
               </div>
-            ))}
-          </div>
+          )}
         </div>
 
         {/* Right — two stacked cards */}
